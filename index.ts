@@ -118,7 +118,7 @@ publicRoutes.get("/logout", (ctx) => {
   setResponse(ctx, 200, { meta: { message: "Successfully logged out" } });
 });
 
-privateRoutes.get("/account", (ctx) => {
+function getAccount(ctx: Context) {
   const token = ctx.cookies.get(SESSION_TOKEN);
   if (!token) {
     return sessionFailure(ctx);
@@ -132,10 +132,34 @@ privateRoutes.get("/account", (ctx) => {
     return sessionFailure(ctx);
   }
 
-  setResponse(ctx, 200, {
-    data: account,
-  });
+  return account;
+}
+
+privateRoutes.get("/account", (ctx) => {
+  const account = getAccount(ctx);
+  if (account) {
+    setResponse(ctx, 200, {
+      data: account,
+    });
+  }
 });
+
+const nameInputSchema = object({ name: string() });
+
+privateRoutes.post(
+  "/set-name",
+  validation(object({ name: string() })),
+  (ctx) => {
+    const { name } = ctx.request.body as InferType<typeof nameInputSchema>;
+    const account = getAccount(ctx);
+    if (account) {
+      account.name = name;
+      setResponse(ctx, 200, {
+        data: account,
+      });
+    }
+  }
+);
 
 app.use(
   cors({
