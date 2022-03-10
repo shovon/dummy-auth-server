@@ -79,7 +79,7 @@ const loginSchema = object({
 });
 
 publicRoutes.post("/login", validation(loginSchema), (ctx) => {
-  const { email } = ctx.body as InferType<typeof loginSchema>;
+  const { email } = ctx.request.body as InferType<typeof loginSchema>;
 
   const token = generateSessionToken();
 
